@@ -18,7 +18,7 @@ This GitHub project is an AIO download/upload/sync manager using the power of [*
   <img height="45" src="https://minormole.github.io/RcloneLab/img/title_cloud_commander.png">
 </p>
 
-## Usage [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MinorMole/RcloneLab/blob/master/RcloneLab.ipynb)
+## Usage [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/geart891/RLabClone/blob/master/RcloneLab.ipynb)
 
 1. Open the IPython Notebook file in Google Colaboratory by clicking [here](https://colab.research.google.com/github/geart891/RcloneLab/blob/geart891-patch-1/RcloneLab.ipynb).
 
