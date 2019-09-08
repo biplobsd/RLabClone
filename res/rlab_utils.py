@@ -1,4 +1,4 @@
-import uuid, subprocess  # nosec
+import uuid, subprocess, shlex, json  # nosec
 from psutil import pids, Process
 from os import path as _p
 from sys import exit as exx, path as s_p
@@ -34,14 +34,14 @@ def generateRandomStr():
     return str(uuid.uuid4()).split("-")[0]
 
 
-def checkAvailable(path_="", user=False):
+def checkAvailable(path_="", userPath=False):
 
     if path_ == "":
         return False
     else:
         return (
             _p.exists(path_)
-            if not user
+            if not userPath
             else _p.exists(f"/usr/local/sessionSettings/{path_}")
         )
 
@@ -66,28 +66,41 @@ def findProcess(process, command="", isPid=False):
                 continue
 
 
-def runSh(args=["echo", "Command", "not", "found"], showOutput=True):
-    if isinstance(args, list):
-        newArg = args
-    elif isinstance(args, str):
-        newArg = " ".split(args)
+def runSh(args, *, output=False, shell=False):
+    if not shell:
+        if output:
+            proc = subprocess.Popen(  # nosec
+                shlex.split(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
+            while True:
+                output = proc.stdout.readline()
+                if output == b"" and proc.poll() is not None:
+                    return proc.stdout.decode("utf-8").strip()
+                if output:
+                    print(output.decode("utf-8").strip())
+        return subprocess.run(  # nosec
+            shlex.split(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ).returncode
     else:
-        print("Wrong argument type.")
-        exx()
-    try:
-        if showOutput:
-            return subprocess.check_output(newArg).decode("utf-8")  # nosec
-        else:
-            return subprocess.run(newArg)  # nosec
-    except:
-        print(f'Error System Call with "{newArg}"')
+        if output:
+            return (
+                subprocess.run(
+                    args,
+                    shell=True,  # nosec
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+                .stdout.decode("utf-8")
+                .strip()
+            )
+        return subprocess.run(args, shell=True).returncode  # nosec
 
 
-def accessSettingFile(path="", setting={}):
+def accessSettingFile(file="", setting={}):
     if not isinstance(setting, dict):
         print("Only accept Dictionary object.")
         exx()
-    fullPath = f"/usr/local/sessionSettings/{path}"
+    fullPath = f"/usr/local/sessionSettings/{file}"
     try:
         if not len(setting):
             if not checkAvailable(fullPath):
@@ -96,49 +109,24 @@ def accessSettingFile(path="", setting={}):
             with open(fullPath) as jsonObj:
                 return json.load(jsonObj)
         else:
-            with open(fullPath, "w") as outfile:
-                json.dumps(setting, outfile)
+            with open(fullPath, "w+") as outfile:
+                json.dump(setting, outfile)
     except:
         print(f"Error accessing the file: {fullPath}.")
-        exx()
 
 
 # Prepare prerequisites
 
 
-def installRclone():
-    if checkAvailable("/usr/bin/rclone"):
-        return
-    else:
-        try:
-            runSh("curl -s https://rclone.org/install.sh | sudo bash -s beta")
-        except:
-            print("Error installing rClone.")
-
-
-def installQBittorren():
+def installQBittorrent():
     if checkAvailable("/usr/bin/qbittorrent-nox"):
         return
     else:
         try:
-            runSh(
-                'yes "" | add-apt-repository ppa:qbittorrent-team/qbittorrent-stable \
-                    && apt install qbittorrent-nox -qq -y'
-            )
+            runSh("add-apt-repository ppa:qbittorrent-team/qbittorrent-stable -y")
+            runSh("apt install qbittorrent-nox -qq -y")
         except:
             print("Error installing qBittorrent.")
-            exx()
-
-
-def updateApt():
-    if checkAvailable("checkAptUpdate.txt", True):
-        return
-    else:
-        try:
-            log = runSh("apt update -qq -y && apt-get install -y iputils-ping")
-            accessSettingFile("checkAptUpdate.txt", {"apt-log": log})
-        except:
-            print("Error update apt.")
             exx()
 
 
@@ -147,11 +135,11 @@ def installNgrok():
         return
     else:
         runSh(
-            "wget -qq -c -nc https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip \
-                && unzip -qq -n ngrok-stable-linux-amd64.zip && mv ngrok /usr/local/bin/ngrok \
-                && rm -f /content/ngrok-stable-linux-amd64.zip",
-            False,
+            "wget -qq -c -nc https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip"
         )
+        runSh("unzip -qq -n ngrok-stable-linux-amd64.zip")
+        runSh("mv ngrok /usr/local/bin/ngrok")
+        runSh("rm -f /content/ngrok-stable-linux-amd64.zip")
 
 
 def installAutoSSH():
@@ -165,34 +153,34 @@ def installJDownloader():
     return
 
 
-def cleanContentDir():
-    if not checkAvailable("/content/sample_data"):
-        return
-    else:
-        runSh("rm -rf /content/sample_data", False)
+def addUtils():
+    if checkAvailable("/content/sample_data"):
+        runSh("rm -rf /content/sample_data")
+    if not checkAvailable("/usr/local/sessionSettings"):
+        runSh("mkdir -p -m 666 /usr/local/sessionSettings")
+    if not checkAvailable("/root/.ipython/rlab_utils"):
+        runSh(
+            "wget -qq https://geart891.github.io/RLabClone/res/rlab_utils.py \
+                -O /root/.ipython/rlab_utils.py"
+        )
+    if not checkAvailable("checkAptUpdate.txt", True):
+        runSh("apt update -qq -y")
+        runSh("apt-get install -y iputils-ping")
+        data = {"apt": "updated", "ping": "installed"}
+        accessSettingFile("checkAptUpdate.txt", data)
 
-
-def addSYSPATH():
-    if s_p[0] == "/usr/local/sessionSettings":
-        return
-    s_p.insert(0, "/usr/local/sessionSettings")
-
-
-def addUltis():
-    if checkAvailable("/root/.ipython/rlab_utils"):
-        return
-    runSh(
-        "wget -qq https://geart891.github.io/RLabClone/res/rlab_utils.zip \
-            -O /root/.ipython/rlab_utils.zip \
-                && unzip -qq -n /root/.ipython/rlab_utils.zip \
-                    -d /root/.ipython/rlab_utils \
-                        && rm -f /root/.ipython/rlab_utils.zip",
-        False,
-    )
+    if not checkAvailable("/usr/bin/rclone"):
+        try:
+            runSh(
+                "curl -s https://rclone.org/install.sh | sudo bash -s beta",
+                shell=True,  # nosec
+            )
+        except:
+            print("Error installing rClone.")
 
 
 def checkServer(hostname):
-    return True if runSh(f"ping -c 1 {hostname}", False).returncode == 0 else False
+    return True if runSh(f"ping -c 1 {hostname}", shell=True) == 0 else False #nosec
 
 
 def configTimezone(auto=True):
@@ -201,13 +189,10 @@ def configTimezone(auto=True):
     if not auto:
         runSh("sudo dpkg-reconfigure tzdata")
     else:
-        runSh(
-            "sudo ln -fs /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime \
-                && sudo dpkg-reconfigure -f noninteractive tzdata",
-            False,
-        )
-    timezone = {"timezone": runSh("cat /etc/timezone")[0]}
-    accessSettingFile("timezone.txt", timezone)
+        runSh("sudo ln -fs /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime")
+        runSh("sudo dpkg-reconfigure -f noninteractive tzdata")
+    data = {"timezone": "Asia/Ho_Chi_Minh"}
+    accessSettingFile("timezone.txt", data)
 
 
 def uploadRcloneConfig(localUpload=False):
@@ -215,8 +200,8 @@ def uploadRcloneConfig(localUpload=False):
         return
     elif not localUpload:
         runSh(
-            "wget -qq https://geart891.github.io/RLabClone/res/rclonelab/rclone.conf -O /usr/local/sessionSettings/rclone.conf",
-            False,
+            "wget -qq https://geart891.github.io/RLabClone/res/rclonelab/rclone.conf \
+                -O /usr/local/sessionSettings/rclone.conf"
         )
     else:
         try:
@@ -224,16 +209,15 @@ def uploadRcloneConfig(localUpload=False):
             uploadedFileName = files.upload().keys()
             if len(uploadedFileName) > 1:
                 for fn in uploadedFileName:
-                    runSh(f'rm -f "/content/{fn}"', False)
+                    runSh(f'rm -f "/content/{fn}"')
                 return print("Please only upload a single config file.")
             elif len(uploadedFileName) == 0:
                 return print("File upload cancelled.")
             elif checkAvailable(f"/content/{uploadedFileName[0]}"):
                 runSh(
-                    f'mv -f "/content/{uploadedFileName[0]}" /usr/local/sessionSettings/rclone.conf \
-                        && chmod 666 /usr/local/sessionSettings/rclone.conf',
-                    False,
+                    f'mv -f "/content/{uploadedFileName[0]}" /usr/local/sessionSettings/rclone.conf'
                 )
+                runSh("chmod 666 /usr/local/sessionSettings/rclone.conf")
             else:
                 pass
         except:
@@ -243,31 +227,30 @@ def uploadRcloneConfig(localUpload=False):
 def uploadQBittorrentConfig():
     if checkAvailable("updatedQBSettings.txt", True):
         return
+
     runSh(
-        "mkdir -p -m 755 /{content/qBittorrent,root/{.qBittorrent_temp,.config/qBittorrent}} \
-            && wget -qq https://geart891.github.io/RLabClone/res/qbittorrent/qBittorrent.conf \
-                -O /root/.config/qBittorrent/qBittorrent.conf",
-        False,
+        "mkdir -p -m 666 /content/qBittorrent /root/.qBittorrent_temp /root/.config/qBittorrent"
     )
-    accessSettingFile("updatedQBSettings.txt", {"uploaded": True})
+    runSh(
+        "wget -qq https://geart891.github.io/RLabClone/res/qbittorrent/qBittorrent.conf \
+            -O /root/.config/qBittorrent/qBittorrent.conf"
+    )
+    data = {"uploaded": "True"}
+    accessSettingFile("updatedQBSettings.txt", data)
 
 
 def prepareSession():
-    if checkAvailable("ready.start", True):
+    if checkAvailable("ready.txt", True):
         return
     else:
         try:
-            addSYSPATH()
-            addUltis()
-            cleanContentDir()
+            addUtils()
             configTimezone()
             uploadRcloneConfig()
             uploadQBittorrentConfig()
-            updateApt()
-            accessSettingFile("ready.start", {"prepared": True})
+            accessSettingFile("ready.txt", {"prepared": "True"})
         except:
             print("Error preparing Remote.")
-            exx()
 
 
 # rClone
@@ -276,39 +259,34 @@ PATH_RClone_Config = "/usr/local/sessionSettings"
 PATH_RClone_Log = "/usr/local/sessionSettings/rclone_log"
 
 
-def displayOutput(output="None", color="#ce2121"):
-    if isinstance(output, list):
-        display(
-            HTML(
-                f"""
-                <a style="font-family:monospace;color:#2cff29;font-size:14px;">
-                    {'<br>'.join(output[-10:])}
-                </a>\
-                <center>
-                    <h2 style="font-family:Trebuchet MS;color:#00b24c;">
-                        ✅ Operation has been successfully completed.
-                    </h2>
-                    <br>
-                </center>
-                """
-            )
-        )
-    elif isinstance(output, str):
-        display(
-            HTML(
-                f"""
-                <center>\
-                    <h2 style="font-family:Trebuchet MS;color:{color};">
-                        {output}
-                    </h2>
-                    <br>
-                </center>
-                """
-            )
-        )
+def displayOutput(operationName="", color="#ce2121"):
+    if color == "success":
+        hColor = "#28a745"
+        displayTxt = f"👍 Operation {operationName} has been successfully completed."
+    elif color == "danger":
+        hColor = "#dc3545"
+        displayTxt = f"❌ Operation {operationName} has been errored."
+    elif color == "info":
+        hColor = "#17a2b8"
+        displayTxt = f"👋 Operation {operationName} has some info."
+    elif color == "warning":
+        hColor = "#ffc107"
+        displayTxt = f"⚠ Operation {operationName} has been warning."
     else:
-        print("Type errors.")
-        exx()
+        hColor = "#ffc107"
+        displayTxt = f"{operationName} works."
+    display(
+        HTML(
+            f"""
+            <center>
+                <h2 style="font-family:monospace;color:{hColor};">
+                    {displayTxt}
+                </h2>
+                <br>
+            </center>
+            """
+        )
+    )
 
 
 # qBittorrent
