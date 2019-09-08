@@ -83,7 +83,7 @@ def runSh(args, *, output=False, shell=False):
             while True:
                 output = proc.stdout.readline()
                 if output == b"" and proc.poll() is not None:
-                    return proc.stdout.decode("utf-8").strip()
+                    return
                 if output:
                     print(output.decode("utf-8").strip())
         return subprocess.run(shlex.split(args)).returncode  # nosec
