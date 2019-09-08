@@ -1,12 +1,14 @@
-import uuid, subprocess, shlex, json  # nosec
-from psutil import pids, Process
-from os import path as _p
-from sys import exit as exx, path as s_p
-from google.colab import output  # pylint: disable=import-error
+import uuid, subprocess, shlex, json, re  # nosec
+import ipywidgets as widgets
 from IPython import get_ipython  # pylint: disable=import-error
 from IPython.display import HTML, clear_output, display  # pylint: disable=import-error
+from google.colab import output, files  # pylint: disable=import-error
+from glob import glob
+from os import path as _p
+from psutil import pids, Process
+from sys import exit as exx, path as s_p
 
-# Ultilities Methods
+# Ultilities Methods ==========================================================
 class MakeButton(object):
     def __init__(self, title, callback):
         self._title = title
@@ -28,6 +30,12 @@ class MakeButton(object):
             """
         html = template.format(title=self._title, callback_id=callback_id)
         return html
+
+
+def MakeLabel(description, button_style):
+    return widgets.Button(
+        description=description, disabled=True, button_style=button_style
+    )
 
 
 def generateRandomStr():
@@ -78,9 +86,7 @@ def runSh(args, *, output=False, shell=False):
                     return proc.stdout.decode("utf-8").strip()
                 if output:
                     print(output.decode("utf-8").strip())
-        return subprocess.run(  # nosec
-            shlex.split(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        ).returncode
+        return subprocess.run(shlex.split(args)).returncode  # nosec
     else:
         if output:
             return (
@@ -115,7 +121,7 @@ def accessSettingFile(file="", setting={}):
         print(f"Error accessing the file: {fullPath}.")
 
 
-# Prepare prerequisites
+# Prepare prerequisites========================================================
 
 
 def installQBittorrent():
@@ -150,7 +156,21 @@ def installAutoSSH():
 
 
 def installJDownloader():
-    return
+    if checkAvailable("/root/.JDownloader/JDownloader.jar"):
+        return
+    else:
+        runSh("mkdir -p -m 666 /root/.JDownloader/libs")
+        runSh("apt install openjdk-8-jre-headless -qq -y")
+        runSh(
+            "wget -q http://installer.jdownloader.org/JDownloader.jar -O /root/.JDownloader/JDownloader.jar"
+        )
+        runSh("java -jar /root/.JDownloader/JDownloader.jar -norestart -h")
+        runSh(
+            "wget -q https://geart891.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509.jar -O /root/.JDownloader/libs/sevenzipjbinding1509.jar"
+        )
+        runSh(
+            "wget -q https://geart891.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509Linux.jar -O /root/.JDownloader/libs/sevenzipjbinding1509Linux.jar"
+        )
 
 
 def addUtils():
@@ -180,7 +200,7 @@ def addUtils():
 
 
 def checkServer(hostname):
-    return True if runSh(f"ping -c 1 {hostname}", shell=True) == 0 else False #nosec
+    return True if runSh(f"ping -c 1 {hostname}", shell=True) == 0 else False  # nosec
 
 
 def configTimezone(auto=True):
@@ -213,13 +233,16 @@ def uploadRcloneConfig(localUpload=False):
                 return print("Please only upload a single config file.")
             elif len(uploadedFileName) == 0:
                 return print("File upload cancelled.")
-            elif checkAvailable(f"/content/{uploadedFileName[0]}"):
-                runSh(
-                    f'mv -f "/content/{uploadedFileName[0]}" /usr/local/sessionSettings/rclone.conf'
-                )
-                runSh("chmod 666 /usr/local/sessionSettings/rclone.conf")
             else:
-                pass
+                for fn in uploadedFileName:
+                    if checkAvailable(f"/content/{fn}"):
+                        runSh(
+                            f'mv -f "/content/{fn}" /usr/local/sessionSettings/rclone.conf'
+                        )
+                        runSh("chmod 666 /usr/local/sessionSettings/rclone.conf")
+                        runSh('rm -f "/content/{fn}"')
+                        print("Uploaded file successfully.")
+
         except:
             return print("Upload process Error.")
 
@@ -253,7 +276,7 @@ def prepareSession():
             print("Error preparing Remote.")
 
 
-# rClone
+# rClone ======================================================================
 
 PATH_RClone_Config = "/usr/local/sessionSettings"
 PATH_RClone_Log = "/usr/local/sessionSettings/rclone_log"
@@ -289,7 +312,8 @@ def displayOutput(operationName="", color="#ce2121"):
     )
 
 
-# qBittorrent
+# qBittorrent =================================================================
+QB_Port = 10001
 
 tokens = {
     "ddn": "6qGnEsrCL4GqZ7hMfqpyz_7ejAThUCjVnU9gD5pbP5u",
@@ -310,3 +334,212 @@ def displayUrl(data, buRemotem, reset):
     if "token" in data.keys():
         display(MakeButton("Reset", reset))
 
+
+# JDownloader =================================================================
+
+Email = widgets.Text(placeholder="*Required", description="Email:")
+Password = widgets.Text(placeholder="*Required", description="Password:")
+Device = widgets.Text(placeholder="Optional", description="Name:")
+SavePath = widgets.Dropdown(
+    value="/content/Downloads",
+    options=["/content", "/content/Downloads"],
+    description="Save Path:",
+)
+
+
+def RefreshPath():
+    if checkAvailable("/content/drive/"):
+        if checkAvailable("/content/drive/Shared drives/"):
+            SavePath.options = (
+                ["/content", "/content/Downloads", "/content/drive/My Drive"]
+                + glob("/content/drive/My Drive/*/")
+                + glob("/content/drive/Shared drives/*/")
+            )
+        else:
+            SavePath.options = [
+                "/content",
+                "/content/Downloads",
+                "/content/drive/My Drive",
+            ] + glob("/content/drive/My Drive/*/")
+    else:
+        SavePath.options = ["/content", "/content/Downloads"]
+
+
+def jDLoginForm():
+    clear_output(wait=True)
+    Email.value = "daniel.dungngo@gmail.com"
+    Password.value = "ZjPNiqjL4e6ckwM"
+    Device.value = ""
+    RefreshPath()
+    display(
+        HTML(
+            """
+            <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
+                If you don't have an account yet, please register 
+                    <a href="https://my.jdownloader.org/login.html#register" target="_blank">
+                        here
+                    </a>.
+            </h3>"""
+        ),
+        HTML("<br>"),
+        Email,
+        Password,
+        Device,
+        SavePath,
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Refresh", RefreshPath, ""
+        ),
+    )
+    if not checkAvailable("/content/drive/"):
+        display(HTML("*If you want to save in Google Drive please run the cell below."))
+    display(
+        HTML("<br>"),
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Login", checkJDLogin, "info"
+        ),
+    )
+    if checkAvailable(
+        "/root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json"
+    ):
+        display(
+            MakeButton(  # pylint: disable=too-many-function-args
+                "Cancel", displayJDControl, "danger"
+            )
+        )
+
+
+def jDRestartForm():
+    clear_output(wait=True)
+    display(
+        MakeLabel("Restart Confirm?", ""),
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Confirm", jDStartService, "danger"
+        ),
+        MakeButton("Cancel", displayJDControl, "warning"),  # pylint: disable=too-many-function-args
+    )
+
+
+def jDExitForm():
+    clear_output(wait=True)
+    display(
+        MakeLabel("Exit Confirm?", ""),
+        MakeButton("Confirm", exitJDWeb, "danger"),  # pylint: disable=too-many-function-args
+        MakeButton("Cancel", displayJDControl, "warning"),  # pylint: disable=too-many-function-args
+    )
+
+
+def checkJDLogin():
+    try:
+        if not Email.value.strip():
+            ERROR = "Email field is empty."
+            THROW_ERROR
+        if not "@" in Email.value and not "." in Email.value:
+            ERROR = "Email is an incorrect format."
+            THROW_ERROR
+        if not Password.value.strip():
+            ERROR = "Password field is empty."
+            THROW_ERROR
+        if not bool(re.match("^[a-zA-Z0-9]+$", Device.value)) and Device.value.strip():
+            ERROR = "Only alphanumeric are allowed for the device name."
+            THROW_ERROR
+        jDStartLogin()
+    except:
+        print(ERROR)
+
+def jDStartService():
+    runSh("pkill -9 -e -f java")
+    runSh(
+        "java -jar /root/.JDownloader/JDownloader.jar -norestart -noerr -r &",
+        shell=True,  # nosec
+    )
+    displayJDControl()
+
+def jDStartLogin():
+    clear_output(wait=True)
+    if SavePath.value == "/content":
+        savePath = {"defaultdownloadfolder": "/content/Downloads"}
+    elif SavePath.value == "/content/Downloads":
+        runSh("mkdir -p -m 666 /content/Downloads")
+        savePath = {"defaultdownloadfolder": "/content/Downloads"}
+    else:
+        savePath = {"defaultdownloadfolder": SavePath.value}
+
+    runSh(
+        f"echo '{savePath}' > /root/.JDownloader/cfg/org.jdownloader.settings.GeneralSettings.json",
+        shell=True,  # nosec
+    )
+    if Device.value.strip() == "":
+        Device.value = Email.value
+    runSh("pkill -9 -e -f java")
+    data = {
+        "email": Email.value,
+        "password": Password.value,
+        "devicename": Device.value,
+        "directconnectmode": "LAN",
+    }
+    runSh(
+        f"echo '{data}' > /root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json",
+        shell=True,  # nosec
+    )
+    jDStartService()
+
+
+
+
+def exitJDWeb():
+    runSh("pkill -9 -e -f java")
+    clear_output(wait=True)
+    display(
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Start", jDStartService, "info"
+        )
+    )
+
+
+def displayJDControl():
+    clear_output(wait=True)
+    display(
+        MakeLabel("Control Panel", ""),
+        HTML(
+            """
+            <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
+                You can login to the WebUI by clicking 
+                    <a href="https://my.jdownloader.org/" target="_blank">
+                        here
+                    </a>.
+            </h3>
+            """
+        ),
+        HTML(
+            """
+            <h4 style="font-family:Trebuchet MS;color:#4f8bd6;">
+                If the server didn't showup in 30 sec. please re-login.
+            </h4>
+            """
+        ),
+        HTML("<br>"),
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Re-Login", jDLoginForm, "info"
+        ),
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Restart", jDRestartForm, "warning"
+        ),
+        MakeButton(  # pylint: disable=too-many-function-args
+            "Exit", jDExitForm, "danger"
+        ),
+    )
+
+
+def handleJDLogin(newAccount):
+    installJDownloader()
+    if newAccount:
+        jDLoginForm()
+    else:
+        data = {
+            "email": "daniel.dungngo@gmail.com",
+            "password": "ZjPNiqjL4e6ckwM",
+            "devicename": "daniel.dungngo@gmail.com",
+            "directconnectmode": "LAN",
+        }
+        runSh(f"echo {data} > test.txt", shell=True)  # nosec
+        jDStartService()
