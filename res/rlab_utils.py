@@ -9,33 +9,20 @@ from psutil import pids, Process
 from sys import exit as exx, path as s_p
 
 # Ultilities Methods ==========================================================
-class MakeButton(object):
-    def __init__(self, title, callback):
-        self._title = title
-        self._callback = callback
-
-    def _repr_html_(self):
-        callback_id = "button-" + str(uuid.uuid4())
-        output.register_callback(callback_id, self._callback)
-        template = """
-            <button class="p-Widget jupyter-widgets jupyter-button widget-button mod-info" id="{callback_id}">
-                {title}
-            </button>
-            <script>
-                document.querySelector("#{callback_id}").onclick = (e) => {{
-                    google.colab.kernel.invokeFunction('{callback_id}', [], {{}})
-                    e.preventDefault();
-                }};
-            </script>
-            """
-        html = template.format(title=self._title, callback_id=callback_id)
-        return html
 
 
-def MakeLabel(description, button_style):
-    return widgets.Button(
-        description=description, disabled=True, button_style=button_style
+def createButton(name, *, func=None, style="", icon="check"):
+    global widgets
+    if not widgets in globals():
+        import ipywidgets as widgets
+
+    button = widgets.Button(
+        description=name, button_style=style, icon=icon, disabled=not bool(func)
     )
+    button.style.font_weight = "900"
+    button.on_click(func)
+    output = widgets.Output()
+    display(button, output)
 
 
 def generateRandomStr():
@@ -121,7 +108,7 @@ def accessSettingFile(file="", setting={}):
         print(f"Error accessing the file: {fullPath}.")
 
 
-# Prepare prerequisites========================================================
+# Prepare prerequisites =======================================================
 
 
 def installQBittorrent():
@@ -330,9 +317,9 @@ def displayUrl(data, buRemotem, reset):
     print(f'Web UI: {data["url"]} : {data["port"]}')
     if "surl" in data.keys():
         print(f'Web UI (S): {data["surl"]} : {data["port"]}')
-    display(MakeButton("Start Backup Remote", buRemotem))
+    createButton("Start Backup Remote", func=buRemotem)
     if "token" in data.keys():
-        display(MakeButton("Reset", reset))
+        createButton("Reset", func=reset)
 
 
 # JDownloader =================================================================
@@ -386,46 +373,27 @@ def jDLoginForm():
         Password,
         Device,
         SavePath,
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Refresh", RefreshPath, ""
-        ),
     )
-    if not checkAvailable("/content/drive/"):
-        display(HTML("*If you want to save in Google Drive please run the cell below."))
-    display(
-        HTML("<br>"),
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Login", checkJDLogin, "info"
-        ),
-    )
+    createButton("Refresh", func=RefreshPath)
+    createButton("Login", func=checkJDLogin, style="info")
     if checkAvailable(
         "/root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json"
     ):
-        display(
-            MakeButton(  # pylint: disable=too-many-function-args
-                "Cancel", displayJDControl, "danger"
-            )
-        )
+        createButton("Cancel", func=displayJDControl, style="danger")
 
 
 def jDRestartForm():
     clear_output(wait=True)
-    display(
-        MakeLabel("Restart Confirm?", ""),
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Confirm", jDStartService, "danger"
-        ),
-        MakeButton("Cancel", displayJDControl, "warning"),  # pylint: disable=too-many-function-args
-    )
+    createButton("Restart Confirm?")
+    createButton("Confirm", func=jDStartService, style="danger")
+    createButton("Cancel", func=displayJDControl, style="warning")
 
 
 def jDExitForm():
     clear_output(wait=True)
-    display(
-        MakeLabel("Exit Confirm?", ""),
-        MakeButton("Confirm", exitJDWeb, "danger"),  # pylint: disable=too-many-function-args
-        MakeButton("Cancel", displayJDControl, "warning"),  # pylint: disable=too-many-function-args
-    )
+    createButton("Exit Confirm?")
+    createButton("Confirm", func=exitJDWeb, style="danger")
+    createButton("Cancel", func=displayJDControl, style="warning")
 
 
 def checkJDLogin():
@@ -446,6 +414,7 @@ def checkJDLogin():
     except:
         print(ERROR)
 
+
 def jDStartService():
     runSh("pkill -9 -e -f java")
     runSh(
@@ -453,6 +422,7 @@ def jDStartService():
         shell=True,  # nosec
     )
     displayJDControl()
+
 
 def jDStartLogin():
     clear_output(wait=True)
@@ -484,22 +454,16 @@ def jDStartLogin():
     jDStartService()
 
 
-
-
 def exitJDWeb():
     runSh("pkill -9 -e -f java")
     clear_output(wait=True)
-    display(
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Start", jDStartService, "info"
-        )
-    )
+    createButton("Start", func=jDStartService, style="info")
 
 
 def displayJDControl():
     clear_output(wait=True)
+    createButton("Control Panel")
     display(
-        MakeLabel("Control Panel", ""),
         HTML(
             """
             <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
@@ -517,17 +481,10 @@ def displayJDControl():
             </h4>
             """
         ),
-        HTML("<br>"),
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Re-Login", jDLoginForm, "info"
-        ),
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Restart", jDRestartForm, "warning"
-        ),
-        MakeButton(  # pylint: disable=too-many-function-args
-            "Exit", jDExitForm, "danger"
-        ),
     )
+    createButton("Re-Login", func=jDLoginForm, style="info")
+    createButton("Restart", func=jDRestartForm, style="warning")
+    createButton("Exit", func=jDExitForm, style="danger")
 
 
 def handleJDLogin(newAccount):
@@ -541,5 +498,15 @@ def handleJDLogin(newAccount):
             "devicename": "daniel.dungngo@gmail.com",
             "directconnectmode": "LAN",
         }
-        runSh(f"echo {data} > test.txt", shell=True)  # nosec
+        runSh(
+            f"echo {data} > /root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json",
+            shell=True,  # nosec
+        )
         jDStartService()
+
+
+# TO DO ===
+# Update MAKE BUTTON FUNCTIONS
+# FINISH MAKING ICONS
+#
+
