@@ -312,12 +312,12 @@ tokens = {
 }
 
 
-def displayUrl(data, buRemotem, reset):
+def displayUrl(data, buRemote, reset):
     clear_output(wait=True)
     print(f'Web UI: {data["url"]} : {data["port"]}')
     if "surl" in data.keys():
         print(f'Web UI (S): {data["surl"]} : {data["port"]}')
-    createButton("Start Backup Remote", func=buRemotem)
+    createButton("Start Backup Remote", func=buRemote)
     if "token" in data.keys():
         createButton("Reset", func=reset)
 
