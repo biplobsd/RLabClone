@@ -334,7 +334,7 @@ SavePath = widgets.Dropdown(
 )
 
 
-def RefreshPath():
+def refreshJDPath(a=1):
     if checkAvailable("/content/drive/"):
         if checkAvailable("/content/drive/Shared drives/"):
             SavePath.options = (
@@ -352,115 +352,24 @@ def RefreshPath():
         SavePath.options = ["/content", "/content/Downloads"]
 
 
-def jDLoginForm():
-    clear_output(wait=True)
-    Email.value = "daniel.dungngo@gmail.com"
-    Password.value = "ZjPNiqjL4e6ckwM"
-    Device.value = ""
-    RefreshPath()
-    display(
-        HTML(
-            """
-            <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
-                If you don't have an account yet, please register 
-                    <a href="https://my.jdownloader.org/login.html#register" target="_blank">
-                        here
-                    </a>.
-            </h3>"""
-        ),
-        HTML("<br>"),
-        Email,
-        Password,
-        Device,
-        SavePath,
-    )
-    createButton("Refresh", func=RefreshPath)
-    createButton("Login", func=checkJDLogin, style="info")
-    if checkAvailable(
-        "/root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json"
-    ):
-        createButton("Cancel", func=displayJDControl, style="danger")
-
-
-def jDRestartForm():
-    clear_output(wait=True)
-    createButton("Restart Confirm?")
-    createButton("Confirm", func=jDStartService, style="danger")
-    createButton("Cancel", func=displayJDControl, style="warning")
-
-
-def jDExitForm():
-    clear_output(wait=True)
-    createButton("Exit Confirm?")
-    createButton("Confirm", func=exitJDWeb, style="danger")
-    createButton("Cancel", func=displayJDControl, style="warning")
-
-
-def checkJDLogin():
-    try:
-        if not Email.value.strip():
-            ERROR = "Email field is empty."
-            THROW_ERROR
-        if not "@" in Email.value and not "." in Email.value:
-            ERROR = "Email is an incorrect format."
-            THROW_ERROR
-        if not Password.value.strip():
-            ERROR = "Password field is empty."
-            THROW_ERROR
-        if not bool(re.match("^[a-zA-Z0-9]+$", Device.value)) and Device.value.strip():
-            ERROR = "Only alphanumeric are allowed for the device name."
-            THROW_ERROR
-        jDStartLogin()
-    except:
-        print(ERROR)
-
-
-def jDStartService():
-    runSh("pkill -9 -e -f java")
-    runSh(
-        "java -jar /root/.JDownloader/JDownloader.jar -norestart -noerr -r &",
-        shell=True,  # nosec
-    )
-    displayJDControl()
-
-
-def jDStartLogin():
-    clear_output(wait=True)
-    if SavePath.value == "/content":
-        savePath = {"defaultdownloadfolder": "/content/Downloads"}
-    elif SavePath.value == "/content/Downloads":
-        runSh("mkdir -p -m 666 /content/Downloads")
-        savePath = {"defaultdownloadfolder": "/content/Downloads"}
-    else:
-        savePath = {"defaultdownloadfolder": SavePath.value}
-
-    runSh(
-        f"echo '{savePath}' > /root/.JDownloader/cfg/org.jdownloader.settings.GeneralSettings.json",
-        shell=True,  # nosec
-    )
-    if Device.value.strip() == "":
-        Device.value = Email.value
-    runSh("pkill -9 -e -f java")
-    data = {
-        "email": Email.value,
-        "password": Password.value,
-        "devicename": Device.value,
-        "directconnectmode": "LAN",
-    }
-    runSh(
-        f"echo '{data}' > /root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json",
-        shell=True,  # nosec
-    )
-    jDStartService()
-
-
 def exitJDWeb():
     runSh("pkill -9 -e -f java")
     clear_output(wait=True)
-    createButton("Start", func=jDStartService, style="info")
+    createButton("Start", func=startJDService, style="info")
 
 
-def displayJDControl():
+def confirmJDForm(a):
+    clear_output(wait=True)
+    action = a.description
+    createButton(f"{action} Confirm?")
+    if action == "Restart":
+        createButton("Confirm", func=startJDService, style="danger")
+    else:
+        createButton("Confirm", func=exitJDWeb, style="danger")
+    createButton("Cancel", func=displayJDControl, style="warning")
+
+
+def displayJDControl(a=1):
     clear_output(wait=True)
     createButton("Control Panel")
     display(
@@ -482,15 +391,101 @@ def displayJDControl():
             """
         ),
     )
-    createButton("Re-Login", func=jDLoginForm, style="info")
-    createButton("Restart", func=jDRestartForm, style="warning")
-    createButton("Exit", func=jDExitForm, style="danger")
+    createButton("Re-Login", func=displayJDLoginForm, style="info")
+    createButton("Restart", func=confirmJDForm, style="warning")
+    createButton("Exit", func=confirmJDForm, style="danger")
+
+
+def startJDService(a=1):
+    runSh("pkill -9 -e -f java")
+    runSh(
+        "java -jar /root/.JDownloader/JDownloader.jar -norestart -noerr -r &",
+        shell=True,  # nosec
+    )
+    displayJDControl()
+
+
+def displayJDLoginForm(a=1):
+    clear_output(wait=True)
+    Email.value = ""
+    Password.value = ""
+    Device.value = ""
+    refreshJDPath()
+    display(
+        HTML(
+            """
+            <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
+                If you don't have an account yet, please register 
+                    <a href="https://my.jdownloader.org/login.html#register" target="_blank">
+                        here
+                    </a>.
+            </h3>
+            """
+        ),
+        HTML("<br>"),
+        Email,
+        Password,
+        Device,
+        SavePath,
+    )
+    createButton("Refresh", func=refreshJDPath)
+    createButton("Login", func=startJDFormLogin, style="info")
+    if checkAvailable(
+        "/root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json"
+    ):
+        createButton("Cancel", func=displayJDControl, style="danger")
+
+
+def startJDFormLogin(a=1):
+    try:
+        if not Email.value.strip():
+            ERROR = "Email field is empty."
+            THROW_ERROR
+        if not "@" in Email.value and not "." in Email.value:
+            ERROR = "Email is an incorrect format."
+            THROW_ERROR
+        if not Password.value.strip():
+            ERROR = "Password field is empty."
+            THROW_ERROR
+        if not bool(re.match("^[a-zA-Z0-9]+$", Device.value)) and Device.value.strip():
+            ERROR = "Only alphanumeric are allowed for the device name."
+            THROW_ERROR
+        clear_output(wait=True)
+        if SavePath.value == "/content":
+            savePath = {"defaultdownloadfolder": "/content/Downloads"}
+        elif SavePath.value == "/content/Downloads":
+            runSh("mkdir -p -m 666 /content/Downloads")
+            savePath = {"defaultdownloadfolder": "/content/Downloads"}
+        else:
+            savePath = {"defaultdownloadfolder": SavePath.value}
+
+        with open(
+            "/root/.JDownloader/cfg/org.jdownloader.settings.GeneralSettings.json", "w+"
+        ) as outPath:
+            json.dump(savePath, outPath)
+        if Device.value.strip() == "":
+            Device.value = Email.value
+        runSh("pkill -9 -e -f java")
+        data = {
+            "email": Email.value,
+            "password": Password.value,
+            "devicename": Device.value,
+            "directconnectmode": "LAN",
+        }
+        with open(
+            "/root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json",
+            "w+",
+        ) as outData:
+            json.dump(data, outData)
+        startJDService()
+    except:
+        print(ERROR)
 
 
 def handleJDLogin(newAccount):
     installJDownloader()
     if newAccount:
-        jDLoginForm()
+        displayJDLoginForm()
     else:
         data = {
             "email": "daniel.dungngo@gmail.com",
@@ -498,11 +493,12 @@ def handleJDLogin(newAccount):
             "devicename": "daniel.dungngo@gmail.com",
             "directconnectmode": "LAN",
         }
-        runSh(
-            f"echo {data} > /root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json",
-            shell=True,  # nosec
-        )
-        jDStartService()
+        with open(
+            "/root/.JDownloader/cfg/org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json",
+            "w+",
+        ) as outData:
+            json.dump(data, outData)
+        startJDService()
 
 
 # TO DO ===
