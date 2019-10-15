@@ -1,4 +1,4 @@
-import uuid, subprocess, shlex, json, re  # nosec
+import json, re  # nosec
 import ipywidgets as widgets
 from IPython import get_ipython  # pylint: disable=import-error
 from IPython.display import HTML, clear_output, display  # pylint: disable=import-error
@@ -12,9 +12,7 @@ from sys import exit as exx, path as s_p
 
 
 def createButton(name, *, func=None, style="", icon="check"):
-    global widgets
-    if not widgets in globals():
-        import ipywidgets as widgets
+    import ipywidgets as widgets
 
     button = widgets.Button(
         description=name, button_style=style, icon=icon, disabled=not bool(func)
@@ -26,11 +24,12 @@ def createButton(name, *, func=None, style="", icon="check"):
 
 
 def generateRandomStr():
-    return str(uuid.uuid4()).split("-")[0]
+    from uuid import uuid4
+    return str(uuid4()).split("-")[0]
 
 
 def checkAvailable(path_="", userPath=False):
-
+    from os import path as _p
     if path_ == "":
         return False
     else:
@@ -62,6 +61,8 @@ def findProcess(process, command="", isPid=False):
 
 
 def runSh(args, *, output=False, shell=False):
+    import subprocess, shlex #nosec
+
     if not shell:
         if output:
             proc = subprocess.Popen(  # nosec
@@ -167,7 +168,7 @@ def installMkvTools():
         outFile.write("deb https://mkvtoolnix.download/ubuntu/ bionic main")
     runSh(
         "wget -q -O - https://mkvtoolnix.download/gpg-pub-moritzbunkus.txt | sudo apt-key add - && sudo apt-get install mkvtoolnix mkvtoolnix-gui",
-        shell=True,
+        shell=True, #nosec
     )
     if not checkAvailable("/usr/bin/mediainfo"):
         runSh("apt-get install mediainfo")
