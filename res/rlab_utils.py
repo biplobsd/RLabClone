@@ -117,7 +117,7 @@ def installQBittorrent():
     else:
         try:
             runSh("add-apt-repository ppa:qbittorrent-team/qbittorrent-stable -y")
-            runSh("apt install qbittorrent-nox -qq -y")
+            runSh("apt-get install qbittorrent-nox -qq -y")
         except:
             print("Error installing qBittorrent.")
             exx()
@@ -139,7 +139,7 @@ def installAutoSSH():
     if checkAvailable("/usr/bin/autossh"):
         return
     else:
-        runSh("apt install autossh -qq -y")
+        runSh("apt-get install autossh -qq -y")
 
 
 def installJDownloader():
@@ -147,7 +147,7 @@ def installJDownloader():
         return
     else:
         runSh("mkdir -p -m 666 /root/.JDownloader/libs")
-        runSh("apt install openjdk-8-jre-headless -qq -y")
+        runSh("apt-get install openjdk-8-jre-headless -qq -y")
         runSh(
             "wget -q http://installer.jdownloader.org/JDownloader.jar -O /root/.JDownloader/JDownloader.jar"
         )
@@ -158,6 +158,19 @@ def installJDownloader():
         runSh(
             "wget -q https://geart891.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509Linux.jar -O /root/.JDownloader/libs/sevenzipjbinding1509Linux.jar"
         )
+
+
+def installMkvTools():
+    if checkAvailable("/etc/apt/sources.list.d/mkvtoolnix.download.list"):
+        return
+    with open("/etc/apt/sources.list.d/mkvtoolnix.download.list", "w+") as outFile:
+        outFile.write("deb https://mkvtoolnix.download/ubuntu/ bionic main")
+    runSh(
+        "wget -q -O - https://mkvtoolnix.download/gpg-pub-moritzbunkus.txt | sudo apt-key add - && sudo apt-get install mkvtoolnix mkvtoolnix-gui",
+        shell=True,
+    )
+    if not checkAvailable("/usr/bin/mediainfo"):
+        runSh("apt-get install mediainfo")
 
 
 def addUtils():
