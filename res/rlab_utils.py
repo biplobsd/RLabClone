@@ -189,7 +189,8 @@ def addUtils():
         runSh("apt-get install -y iputils-ping")
         data = {"apt": "updated", "ping": "installed"}
         accessSettingFile("checkAptUpdate.txt", data)
-
+    if not checkAvailable("/content/upload.txt"):
+        runSh(":> /content/upload.txt")
     if not checkAvailable("/usr/bin/rclone"):
         try:
             runSh(
