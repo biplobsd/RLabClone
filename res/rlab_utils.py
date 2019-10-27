@@ -1,11 +1,9 @@
 import json, re  # nosec
 import ipywidgets as widgets
-from IPython import get_ipython  # pylint: disable=import-error
 from IPython.display import HTML, clear_output, display  # pylint: disable=import-error
-from google.colab import output, files  # pylint: disable=import-error
+from google.colab import files  # pylint: disable=import-error
 from glob import glob
 from os import path as _p
-from psutil import pids, Process
 from sys import exit as exx, path as s_p
 
 # Ultilities Methods ==========================================================
@@ -25,11 +23,13 @@ def createButton(name, *, func=None, style="", icon="check"):
 
 def generateRandomStr():
     from uuid import uuid4
+
     return str(uuid4()).split("-")[0]
 
 
 def checkAvailable(path_="", userPath=False):
     from os import path as _p
+
     if path_ == "":
         return False
     else:
@@ -41,6 +41,8 @@ def checkAvailable(path_="", userPath=False):
 
 
 def findProcess(process, command="", isPid=False):
+    from psutil import pids, Process
+
     if isinstance(process, int):
         if process in pids():
             return True
@@ -61,7 +63,7 @@ def findProcess(process, command="", isPid=False):
 
 
 def runSh(args, *, output=False, shell=False):
-    import subprocess, shlex #nosec
+    import subprocess, shlex  # nosec
 
     if not shell:
         if output:
@@ -91,6 +93,8 @@ def runSh(args, *, output=False, shell=False):
 
 
 def accessSettingFile(file="", setting={}):
+    from json import load, dump
+
     if not isinstance(setting, dict):
         print("Only accept Dictionary object.")
         exx()
@@ -101,10 +105,10 @@ def accessSettingFile(file="", setting={}):
                 print(f"File unavailable: {fullPath}.")
                 exx()
             with open(fullPath) as jsonObj:
-                return json.load(jsonObj)
+                return load(jsonObj)
         else:
             with open(fullPath, "w+") as outfile:
-                json.dump(setting, outfile)
+                dump(setting, outfile)
     except:
         print(f"Error accessing the file: {fullPath}.")
 
@@ -168,37 +172,18 @@ def installMkvTools():
         outFile.write("deb https://mkvtoolnix.download/ubuntu/ bionic main")
     runSh(
         "wget -q -O - https://mkvtoolnix.download/gpg-pub-moritzbunkus.txt | sudo apt-key add - && sudo apt-get install mkvtoolnix mkvtoolnix-gui",
-        shell=True, #nosec
+        shell=True,  # nosec
     )
     if not checkAvailable("/usr/bin/mediainfo"):
         runSh("apt-get install mediainfo")
 
 
-def addUtils():
-    if checkAvailable("/content/sample_data"):
-        runSh("rm -rf /content/sample_data")
-    if not checkAvailable("/usr/local/sessionSettings"):
-        runSh("mkdir -p -m 666 /usr/local/sessionSettings")
-    if not checkAvailable("/root/.ipython/rlab_utils"):
-        runSh(
-            "wget -qq https://geart891.github.io/RLabClone/res/rlab_utils.py \
-                -O /root/.ipython/rlab_utils.py"
-        )
-    if not checkAvailable("checkAptUpdate.txt", True):
-        runSh("apt update -qq -y")
-        runSh("apt-get install -y iputils-ping")
-        data = {"apt": "updated", "ping": "installed"}
-        accessSettingFile("checkAptUpdate.txt", data)
-    if not checkAvailable("/content/upload.txt"):
-        runSh(":> /content/upload.txt")
+def installRclone():
     if not checkAvailable("/usr/bin/rclone"):
-        try:
-            runSh(
-                "curl -s https://rclone.org/install.sh | sudo bash -s beta",
-                shell=True,  # nosec
-            )
-        except:
-            print("Error installing rClone.")
+        runSh(
+            "curl -s https://rclone.org/install.sh | sudo bash -s beta",
+            shell=True,  # nosec
+        )
 
 
 def checkServer(hostname):
@@ -206,7 +191,7 @@ def checkServer(hostname):
 
 
 def configTimezone(auto=True):
-    if checkAvailable("timezone.txt", True):
+    if checkAvailable("timezone.txt", userPath=True):
         return
     if not auto:
         runSh("sudo dpkg-reconfigure tzdata")
@@ -218,7 +203,7 @@ def configTimezone(auto=True):
 
 
 def uploadRcloneConfig(localUpload=False):
-    if not localUpload and checkAvailable("rclone.conf", True):
+    if not localUpload and checkAvailable("rclone.conf", userPath=True):
         return
     elif not localUpload:
         runSh(
@@ -250,9 +235,8 @@ def uploadRcloneConfig(localUpload=False):
 
 
 def uploadQBittorrentConfig():
-    if checkAvailable("updatedQBSettings.txt", True):
+    if checkAvailable("updatedQBSettings.txt", userPath=True):
         return
-
     runSh(
         "mkdir -p -m 666 /content/qBittorrent /root/.qBittorrent_temp /root/.config/qBittorrent"
     )
@@ -264,18 +248,35 @@ def uploadQBittorrentConfig():
     accessSettingFile("updatedQBSettings.txt", data)
 
 
+def addUtils():
+    if checkAvailable("/content/sample_data"):
+        runSh("rm -rf /content/sample_data")
+    if not checkAvailable("/usr/local/sessionSettings"):
+        runSh("mkdir -p -m 777 /usr/local/sessionSettings")
+    if not checkAvailable("/content/upload.txt"):
+        runSh("touch /content/upload.txt")
+    if not checkAvailable("/root/.ipython/rlab_utils.py"):
+        runSh(
+            "wget -qq https://geart891.github.io/RLabClone/res/rlab_utils.py \
+                -O /root/.ipython/rlab_utils.py"
+        )
+    if not checkAvailable("checkAptUpdate.txt", userPath=True):
+        runSh("apt update -qq -y")
+        runSh("apt-get install -y iputils-ping")
+        data = {"apt": "updated", "ping": "installed"}
+        accessSettingFile("checkAptUpdate.txt", data)
+
+
 def prepareSession():
-    if checkAvailable("ready.txt", True):
+    if checkAvailable("ready.txt", userPath=True):
         return
     else:
-        try:
-            addUtils()
-            configTimezone()
-            uploadRcloneConfig()
-            uploadQBittorrentConfig()
-            accessSettingFile("ready.txt", {"prepared": "True"})
-        except:
-            print("Error preparing Remote.")
+        addUtils()
+        configTimezone()
+        uploadRcloneConfig()
+        uploadQBittorrentConfig()
+        installRclone()
+        accessSettingFile("ready.txt", {"prepared": "True"})
 
 
 # rClone ======================================================================
@@ -315,6 +316,7 @@ def displayOutput(operationName="", color="#ce2121"):
 
 
 # qBittorrent =================================================================
+
 QB_Port = 10001
 
 tokens = {
