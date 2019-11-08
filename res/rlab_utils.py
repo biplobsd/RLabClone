@@ -287,7 +287,6 @@ def prepareSession():
 # rClone ======================================================================
 
 PATH_RClone_Config = "/usr/local/sessionSettings"
-PATH_RClone_Log = "/usr/local/sessionSettings/rclone_log"
 
 
 def displayOutput(operationName="", color="#ce2121"):
