@@ -113,6 +113,12 @@ def accessSettingFile(file="", setting={}):
         print(f"Error accessing the file: {fullPath}.")
 
 
+def memGiB():
+    from os import sysconf as _sc # pylint: disable=no-name-in-module
+
+    return _sc("SC_PAGE_SIZE") * _sc("SC_PHYS_PAGES") / (1024.0 ** 3)
+
+
 # Prepare prerequisites =======================================================
 
 
