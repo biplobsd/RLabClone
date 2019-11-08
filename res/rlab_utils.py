@@ -3,8 +3,7 @@ import ipywidgets as widgets
 from IPython.display import HTML, clear_output, display  # pylint: disable=import-error
 from google.colab import files  # pylint: disable=import-error
 from glob import glob
-from os import path as _p
-from sys import exit as exx, path as s_p
+from sys import exit as exx
 
 # Ultilities Methods ==========================================================
 
