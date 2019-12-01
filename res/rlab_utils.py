@@ -186,7 +186,7 @@ def installMkvTools():
 def installRclone():
     if not checkAvailable("/usr/bin/rclone"):
         runSh(
-            "curl -s https://rclone.org/install.sh | sudo bash",
+            "curl -s https://rclone.org/install.sh | sudo bash -s beta",
             shell=True,  # nosec
         )
 
