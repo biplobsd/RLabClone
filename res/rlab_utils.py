@@ -195,7 +195,7 @@ def installFilebot(installBackup=False):
             if not checkAvailable('/usr/local/sessionSettings/fb/jar'):
                 runSh(
                     'curl -fsSL https://geart891.github.io/RLabClone/res/gdown.sh | bash -s 1OjSf-g8NxssKALp6zIJwJT7YamSVLGiR /usr/local/sessionSettings/fblx.7z \
-                    && 7z x /usr/local/sessionSettings/fblx.7z -o/usr/local/sessionSettings/fb',
+                        && 7z x /usr/local/sessionSettings/fblx.7z -o/usr/local/sessionSettings/fb',
                     shell=True
                 )
 
@@ -205,9 +205,8 @@ def installFilebot(installBackup=False):
             runSh(
                 'wget -q https://geart891.github.io/RLabClone/res/filebot -O /usr/bin/filebot'
             )
-            runSh(
-                'cp -r /usr/local/sessionSettings/fb/jar /usr/share/filebot/jar'
-            )
+            runSh('chmod +x /usr/bin/filebot')
+            runSh('cp -r /usr/local/sessionSettings/fb/jar /usr/share/filebot')
             runSh(
                 'cp -r /usr/local/sessionSettings/fb/filebot.sh /usr/share/filebot/bin/filebot.sh'
             )
