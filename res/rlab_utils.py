@@ -1,6 +1,6 @@
 import json
 import re  # nosec
-import ipywidgets as widgets
+import ipywidgets as widgets  # pylint: disable=import-error
 from IPython.display import HTML, clear_output, display  # pylint: disable=import-error
 from google.colab import files  # pylint: disable=import-error
 from glob import glob
@@ -10,13 +10,10 @@ from sys import exit as exx
 
 
 def createButton(name, *, func=None, style="", icon="check"):
-    import ipywidgets as widgets
+    import ipywidgets as widgets  # pylint: disable=import-error
 
     button = widgets.Button(
-        description=name,
-        button_style=style,
-        icon=icon,
-        disabled=not bool(func)
+        description=name, button_style=style, icon=icon, disabled=not bool(func)
     )
     button.style.font_weight = "900"
     button.on_click(func)
@@ -37,13 +34,14 @@ def checkAvailable(path_="", userPath=False):
         return False
     else:
         return (
-            _p.exists(path_) if not userPath else
-            _p.exists(f"/usr/local/sessionSettings/{path_}")
+            _p.exists(path_)
+            if not userPath
+            else _p.exists(f"/usr/local/sessionSettings/{path_}")
         )
 
 
 def findProcess(process, command="", isPid=False):
-    from psutil import pids, Process
+    from psutil import pids, Process  # pylint: disable=import-error
 
     if isinstance(process, int):
         if process in pids():
@@ -88,7 +86,9 @@ def runSh(args, *, output=False, shell=False):
                     shell=True,  # nosec
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
-                ).stdout.decode("utf-8").strip()
+                )
+                .stdout.decode("utf-8")
+                .strip()
             )
         return subprocess.run(args, shell=True).returncode  # nosec
 
@@ -117,7 +117,7 @@ def accessSettingFile(file="", setting={}):
 def memGiB():
     from os import sysconf as _sc  # pylint: disable=no-name-in-module
 
-    return _sc("SC_PAGE_SIZE") * _sc("SC_PHYS_PAGES") / (1024.0**3)
+    return _sc("SC_PAGE_SIZE") * _sc("SC_PHYS_PAGES") / (1024.0 ** 3)
 
 
 # Prepare prerequisites =======================================================
@@ -128,9 +128,7 @@ def installQBittorrent():
         return
     else:
         try:
-            runSh(
-                "add-apt-repository ppa:qbittorrent-team/qbittorrent-stable -y"
-            )
+            runSh("add-apt-repository ppa:qbittorrent-team/qbittorrent-stable -y")
             runSh("apt-get install qbittorrent-nox -qq -y")
         except:
             print("Error installing qBittorrent.")
@@ -177,9 +175,7 @@ def installJDownloader():
 def installMkvTools():
     if checkAvailable("/etc/apt/sources.list.d/mkvtoolnix.download.list"):
         return
-    with open(
-        "/etc/apt/sources.list.d/mkvtoolnix.download.list", "w+"
-    ) as outFile:
+    with open("/etc/apt/sources.list.d/mkvtoolnix.download.list", "w+") as outFile:
         outFile.write("deb https://mkvtoolnix.download/ubuntu/ bionic main")
     runSh(
         "wget -q -O - https://mkvtoolnix.download/gpg-pub-moritzbunkus.txt | sudo apt-key add - && sudo apt-get install mkvtoolnix mkvtoolnix-gui",
@@ -192,35 +188,35 @@ def installMkvTools():
 def installFilebot(installBackup=False):
     if not checkAvailable("/usr/bin/filebot"):
         if installBackup:
-            if not checkAvailable('/usr/local/sessionSettings/fb/jar'):
+            if not checkAvailable("/usr/local/sessionSettings/fb/jar"):
                 runSh(
-                    'curl -fsSL https://geart891.github.io/RLabClone/res/gdown.sh | bash -s 1OjSf-g8NxssKALp6zIJwJT7YamSVLGiR /usr/local/sessionSettings/fblx.7z \
-                        && 7z x /usr/local/sessionSettings/fblx.7z -o/usr/local/sessionSettings/fb',
-                    shell=True
+                    "curl -fsSL https://geart891.github.io/RLabClone/res/gdown.sh | bash -s 1OjSf-g8NxssKALp6zIJwJT7YamSVLGiR /usr/local/sessionSettings/fblx.7z \
+                        && 7z x /usr/local/sessionSettings/fblx.7z -o/usr/local/sessionSettings/fb",
+                    shell=True,
                 )
 
-            if not checkAvailable('/usr/share/filebot/bin'):
-                runSh('mkdir -p -m 666 /usr/share/filebot/bin')
-                runSh('mkdir -p -m 666 /usr/share/filebot/jar')
+            if not checkAvailable("/usr/share/filebot/bin"):
+                runSh("mkdir -p -m 666 /usr/share/filebot/bin")
+                runSh("mkdir -p -m 666 /usr/share/filebot/jar")
             runSh(
-                'wget -q https://geart891.github.io/RLabClone/res/filebot -O /usr/bin/filebot'
+                "wget -q https://geart891.github.io/RLabClone/res/filebot -O /usr/bin/filebot"
             )
-            runSh('chmod +x /usr/bin/filebot')
-            runSh('cp -r /usr/local/sessionSettings/fb/jar /usr/share/filebot')
+            runSh("chmod +x /usr/bin/filebot")
+            runSh("cp -r /usr/local/sessionSettings/fb/jar /usr/share/filebot")
             runSh(
-                'cp -r /usr/local/sessionSettings/fb/filebot.sh /usr/share/filebot/bin/filebot.sh'
+                "cp -r /usr/local/sessionSettings/fb/filebot.sh /usr/share/filebot/bin/filebot.sh"
             )
         else:
             runSh(
-                'curl -fsSL https://raw.githubusercontent.com/filebot/plugins/master/installer/deb.sh | bash -s',
-                shell=True
+                "curl -fsSL https://raw.githubusercontent.com/filebot/plugins/master/installer/deb.sh | bash -s",
+                shell=True,
             )
-            if checkAvailable('/usr/share/filebot/jar/filebot.jar'):
+            if checkAvailable("/usr/share/filebot/jar/filebot.jar"):
                 runSh(
-                    'mv /usr/share/filebot/jar/filebot.jar /usr/share/filebot/jar/filebot.jar.bak'
+                    "mv /usr/share/filebot/jar/filebot.jar /usr/share/filebot/jar/filebot.jar.bak"
                 )
             runSh(
-                'wget -q https://geart891.github.io/RLabClone/res/filebot.jar -O /usr/share/filebot/jar/filebot.jar'
+                "wget -q https://geart891.github.io/RLabClone/res/filebot.jar -O /usr/share/filebot/jar/filebot.jar"
             )
 
 
@@ -273,9 +269,7 @@ def uploadRcloneConfig(localUpload=False):
                         runSh(
                             f'mv -f "/content/{fn}" /usr/local/sessionSettings/rclone.conf'
                         )
-                        runSh(
-                            "chmod 666 /usr/local/sessionSettings/rclone.conf"
-                        )
+                        runSh("chmod 666 /usr/local/sessionSettings/rclone.conf")
                         runSh('rm -f "/content/{fn}"')
                         print("Uploaded file successfully.")
 
@@ -403,9 +397,9 @@ def refreshJDPath(a=1):
     if checkAvailable("/content/drive/"):
         if checkAvailable("/content/drive/Shared drives/"):
             SavePath.options = (
-                ["/content", "/content/Downloads", "/content/drive/My Drive"] +
-                glob("/content/drive/My Drive/*/") +
-                glob("/content/drive/Shared drives/*/")
+                ["/content", "/content/Downloads", "/content/drive/My Drive"]
+                + glob("/content/drive/My Drive/*/")
+                + glob("/content/drive/Shared drives/*/")
             )
         else:
             SavePath.options = [
@@ -512,8 +506,7 @@ def startJDFormLogin(a=1):
         if not Password.value.strip():
             ERROR = "Password field is empty."
             THROW_ERROR
-        if not bool(re.match("^[a-zA-Z0-9]+$", Device.value)
-                   ) and Device.value.strip():
+        if not bool(re.match("^[a-zA-Z0-9]+$", Device.value)) and Device.value.strip():
             ERROR = "Only alphanumeric are allowed for the device name."
             THROW_ERROR
         clear_output(wait=True)
@@ -526,8 +519,7 @@ def startJDFormLogin(a=1):
             savePath = {"defaultdownloadfolder": SavePath.value}
 
         with open(
-            "/root/.JDownloader/cfg/org.jdownloader.settings.GeneralSettings.json",
-            "w+"
+            "/root/.JDownloader/cfg/org.jdownloader.settings.GeneralSettings.json", "w+"
         ) as outPath:
             json.dump(savePath, outPath)
         if Device.value.strip() == "":
