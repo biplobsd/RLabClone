@@ -1,5 +1,6 @@
-import json, re  # nosec
-import ipywidgets as widgets
+import json
+import re  # nosec
+import ipywidgets as widgets  # pylint: disable=import-error
 from IPython.display import HTML, clear_output, display  # pylint: disable=import-error
 from google.colab import files  # pylint: disable=import-error
 from glob import glob
@@ -9,7 +10,7 @@ from sys import exit as exx
 
 
 def createButton(name, *, func=None, style="", icon="check"):
-    import ipywidgets as widgets
+    import ipywidgets as widgets  # pylint: disable=import-error
 
     button = widgets.Button(
         description=name, button_style=style, icon=icon, disabled=not bool(func)
@@ -40,7 +41,7 @@ def checkAvailable(path_="", userPath=False):
 
 
 def findProcess(process, command="", isPid=False):
-    from psutil import pids, Process
+    from psutil import pids, Process  # pylint: disable=import-error
 
     if isinstance(process, int):
         if process in pids():
@@ -62,7 +63,8 @@ def findProcess(process, command="", isPid=False):
 
 
 def runSh(args, *, output=False, shell=False):
-    import subprocess, shlex  # nosec
+    import subprocess
+    import shlex  # nosec
 
     if not shell:
         if output:
@@ -113,7 +115,7 @@ def accessSettingFile(file="", setting={}):
 
 
 def memGiB():
-    from os import sysconf as _sc # pylint: disable=no-name-in-module
+    from os import sysconf as _sc  # pylint: disable=no-name-in-module
 
     return _sc("SC_PAGE_SIZE") * _sc("SC_PHYS_PAGES") / (1024.0 ** 3)
 
@@ -183,6 +185,41 @@ def installMkvTools():
         runSh("apt-get install mediainfo")
 
 
+def installFilebot(installBackup=False):
+    if not checkAvailable("/usr/bin/filebot"):
+        if installBackup:
+            if not checkAvailable("/usr/local/sessionSettings/fb/jar"):
+                runSh(
+                    "curl -fsSL https://geart891.github.io/RLabClone/res/gdown.sh | bash -s 1OjSf-g8NxssKALp6zIJwJT7YamSVLGiR /usr/local/sessionSettings/fblx.7z \
+                        && 7z x /usr/local/sessionSettings/fblx.7z -o/usr/local/sessionSettings/fb",
+                    shell=True,
+                )
+
+            if not checkAvailable("/usr/share/filebot/bin"):
+                runSh("mkdir -p -m 666 /usr/share/filebot/bin")
+                runSh("mkdir -p -m 666 /usr/share/filebot/jar")
+            runSh(
+                "wget -q https://geart891.github.io/RLabClone/res/filebot -O /usr/bin/filebot"
+            )
+            runSh("chmod +x /usr/bin/filebot")
+            runSh("cp -r /usr/local/sessionSettings/fb/jar /usr/share/filebot")
+            runSh(
+                "cp -r /usr/local/sessionSettings/fb/filebot.sh /usr/share/filebot/bin/filebot.sh"
+            )
+        else:
+            runSh(
+                "curl -fsSL https://raw.githubusercontent.com/filebot/plugins/master/installer/deb.sh | bash -s",
+                shell=True,
+            )
+            if checkAvailable("/usr/share/filebot/jar/filebot.jar"):
+                runSh(
+                    "mv /usr/share/filebot/jar/filebot.jar /usr/share/filebot/jar/filebot.jar.bak"
+                )
+            runSh(
+                "wget -q https://geart891.github.io/RLabClone/res/filebot.jar -O /usr/share/filebot/jar/filebot.jar"
+            )
+
+
 def installRclone():
     if not checkAvailable("/usr/bin/rclone"):
         runSh(
@@ -192,7 +229,8 @@ def installRclone():
 
 
 def checkServer(hostname):
-    return True if runSh(f"ping -c 1 {hostname}", shell=True) == 0 else False  # nosec
+    # nosec
+    return True if runSh(f"ping -c 1 {hostname}", shell=True) == 0 else False
 
 
 def configTimezone(auto=True):
@@ -526,4 +564,3 @@ def handleJDLogin(newAccount):
 # Update MAKE BUTTON FUNCTIONS
 # FINISH MAKING ICONS
 #
-
