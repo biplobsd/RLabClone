@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="70" src="https://geart891.github.io/RLabClone/img/title_rclonelab.png">
+  <img height="70" src="https://biplobsd.github.io/RLabClone/img/title_rclonelab.png">
 </p>
 
 ## Introduction
@@ -11,20 +11,20 @@ This GitHub project is an AIO download/upload/sync manager using the power of [*
 ## Featuring
 
 <p align="center">
-  <img height="45" src="https://geart891.github.io/RLabClone/img/title_qbittorrent.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="45" src="https://geart891.github.io/RLabClone/img/title_jdownloader.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="45" src="https://geart891.github.io/RLabClone/img/title_youtube-dl.png"><br><br>
-  <img height="45" src="https://geart891.github.io/RLabClone/img/title_netdata.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img height="45" src="https://geart891.github.io/RLabClone/img/title_cloud_commander.png">
+  <img height="45" src="https://biplobsd.github.io/RLabClone/img/title_qbittorrent.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img height="45" src="https://biplobsd.github.io/RLabClone/img/title_jdownloader.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img height="45" src="https://biplobsd.github.io/RLabClone/img/title_youtube-dl.png"><br><br>
+  <img height="45" src="https://biplobsd.github.io/RLabClone/img/title_netdata.png">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img height="45" src="https://biplobsd.github.io/RLabClone/img/title_cloud_commander.png">
 </p>
 
-## Usage [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/geart891/RLabClone/blob/master/RcloneLab.ipynb)
+## Usage [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/biplobsd/RLabClone/blob/master/RcloneLab.ipynb)
 
-1. Open the IPython Notebook file in Google Colaboratory by clicking [here](https://colab.research.google.com/github/geart891/RLabClone/blob/master/RcloneLab.ipynb).
+1. Open the IPython Notebook file in Google Colaboratory by clicking [here](https://colab.research.google.com/github/biplobsd/RLabClone/blob/master/RcloneLab.ipynb).
 
 2. Click "Run cell" (play button) that you want and follow the instruction shown in the output.
 
-    <img width="370" src="https://geart891.github.io/RLabClone/docs/01.png">
+    <img width="370" src="https://biplobsd.github.io/RLabClone/docs/01.png">
 
 - We recommend to use [RcloneBrowser](https://github.com/DinCahill/RcloneBrowser) for file browsing and get a path for RcloneLab.
 - Use [**Google Chrome Browser**](https://www.google.com/chrome/) for the best experience; if you face any issues with other browsers, it's the browser problem, not us.
@@ -33,12 +33,12 @@ This GitHub project is an AIO download/upload/sync manager using the power of [*
 ## Screenshot
 
 <p align="center">
-  <img height="160" src="https://geart891.github.io/RLabClone/docs/screenshot/rclonelab.png">
-  <img height="160" src="https://geart891.github.io/RLabClone/docs/screenshot/qbittorrent.png">
-  <img height="160" src="https://geart891.github.io/RLabClone/docs/screenshot/jdownloader.png"><br>
-  <img height="160" src="https://geart891.github.io/RLabClone/docs/screenshot/youtube-dl.png">
-  <img height="160" src="https://geart891.github.io/RLabClone/docs/screenshot/netdata.png">
-  <img height="160" src="https://geart891.github.io/RLabClone/docs/screenshot/cloud_commander.png">
+  <img height="160" src="https://biplobsd.github.io/RLabClone/docs/screenshot/rclonelab.png">
+  <img height="160" src="https://biplobsd.github.io/RLabClone/docs/screenshot/qbittorrent.png">
+  <img height="160" src="https://biplobsd.github.io/RLabClone/docs/screenshot/jdownloader.png"><br>
+  <img height="160" src="https://biplobsd.github.io/RLabClone/docs/screenshot/youtube-dl.png">
+  <img height="160" src="https://biplobsd.github.io/RLabClone/docs/screenshot/netdata.png">
+  <img height="160" src="https://biplobsd.github.io/RLabClone/docs/screenshot/cloud_commander.png">
 </p>
 
 ## Licence [![GitHub license](https://img.shields.io/github/license/MinorMole/RcloneLab.svg)](https://github.com/MinorMole/RcloneLab/blob/master/LICENSE)

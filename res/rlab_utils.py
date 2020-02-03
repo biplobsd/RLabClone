@@ -165,10 +165,10 @@ def installJDownloader():
         )
         runSh("java -jar /root/.JDownloader/JDownloader.jar -norestart -h")
         runSh(
-            "wget -q https://geart891.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509.jar -O /root/.JDownloader/libs/sevenzipjbinding1509.jar"
+            "wget -q https://biplobsd.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509.jar -O /root/.JDownloader/libs/sevenzipjbinding1509.jar"
         )
         runSh(
-            "wget -q https://geart891.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509Linux.jar -O /root/.JDownloader/libs/sevenzipjbinding1509Linux.jar"
+            "wget -q https://biplobsd.github.io/RLabClone/res/jdownloader/sevenzipjbinding1509Linux.jar -O /root/.JDownloader/libs/sevenzipjbinding1509Linux.jar"
         )
 
 
@@ -190,7 +190,7 @@ def installFilebot(installBackup=False):
         if installBackup:
             if not checkAvailable("/usr/local/sessionSettings/fb/jar"):
                 runSh(
-                    "curl -fsSL https://geart891.github.io/RLabClone/res/gdown.sh | bash -s 1OjSf-g8NxssKALp6zIJwJT7YamSVLGiR /usr/local/sessionSettings/fblx.7z \
+                    "curl -fsSL https://biplobsd.github.io/RLabClone/res/gdown.sh | bash -s 1OjSf-g8NxssKALp6zIJwJT7YamSVLGiR /usr/local/sessionSettings/fblx.7z \
                         && 7z x /usr/local/sessionSettings/fblx.7z -o/usr/local/sessionSettings/fb",
                     shell=True,
                 )
@@ -199,7 +199,7 @@ def installFilebot(installBackup=False):
                 runSh("mkdir -p -m 666 /usr/share/filebot/bin")
                 runSh("mkdir -p -m 666 /usr/share/filebot/jar")
             runSh(
-                "wget -q https://geart891.github.io/RLabClone/res/filebot -O /usr/bin/filebot"
+                "wget -q https://biplobsd.github.io/RLabClone/res/filebot -O /usr/bin/filebot"
             )
             runSh("chmod +x /usr/bin/filebot")
             runSh("cp -r /usr/local/sessionSettings/fb/jar /usr/share/filebot")
@@ -216,7 +216,7 @@ def installFilebot(installBackup=False):
                     "mv /usr/share/filebot/jar/filebot.jar /usr/share/filebot/jar/filebot.jar.bak"
                 )
             runSh(
-                "wget -q https://geart891.github.io/RLabClone/res/filebot.jar -O /usr/share/filebot/jar/filebot.jar"
+                "wget -q https://biplobsd.github.io/RLabClone/res/filebot.jar -O /usr/share/filebot/jar/filebot.jar"
             )
 
 
@@ -250,7 +250,7 @@ def uploadRcloneConfig(localUpload=False):
         return
     elif not localUpload:
         runSh(
-            "wget -qq https://geart891.github.io/RLabClone/res/rclonelab/rclone.conf \
+            "wget -qq https://biplobsd.github.io/RLabClone/res/rclonelab/rclone.conf \
                 -O /usr/local/sessionSettings/rclone.conf"
         )
     else:
@@ -284,7 +284,7 @@ def uploadQBittorrentConfig():
         "mkdir -p -m 666 /content/qBittorrent /root/.qBittorrent_temp /root/.config/qBittorrent"
     )
     runSh(
-        "wget -qq https://geart891.github.io/RLabClone/res/qbittorrent/qBittorrent.conf \
+        "wget -qq https://biplobsd.github.io/RLabClone/res/qbittorrent/qBittorrent.conf \
             -O /root/.config/qBittorrent/qBittorrent.conf"
     )
     data = {"uploaded": "True"}
@@ -300,7 +300,7 @@ def addUtils():
         runSh("touch /content/upload.txt")
     if not checkAvailable("/root/.ipython/rlab_utils.py"):
         runSh(
-            "wget -qq https://geart891.github.io/RLabClone/res/rlab_utils.py \
+            "wget -qq https://biplobsd.github.io/RLabClone/res/rlab_utils.py \
                 -O /root/.ipython/rlab_utils.py"
         )
     if not checkAvailable("checkAptUpdate.txt", userPath=True):
@@ -435,7 +435,7 @@ def displayJDControl(a=1):
         HTML(
             """
             <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
-                You can login to the WebUI by clicking 
+                You can login to the WebUI by clicking
                     <a href="https://my.jdownloader.org/" target="_blank">
                         here
                     </a>.
@@ -474,7 +474,7 @@ def displayJDLoginForm(a=1):
         HTML(
             """
             <h3 style="font-family:Trebuchet MS;color:#4f8bd6;">
-                If you don't have an account yet, please register 
+                If you don't have an account yet, please register
                     <a href="https://my.jdownloader.org/login.html#register" target="_blank">
                         here
                     </a>.
