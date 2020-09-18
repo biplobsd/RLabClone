@@ -223,7 +223,7 @@ def installFilebot(installBackup=False):
 def installRclone():
     if not checkAvailable("/usr/bin/rclone"):
         runSh(
-            "curl -s https://rclone.org/install.sh | sudo bash -s beta",
+            "curl -s https://rclone.org/install.sh | sudo bash",
             shell=True,  # nosec
         )
 
